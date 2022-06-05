@@ -168,7 +168,7 @@ class GeneralIQAModel(BaseModel):
                 to_update = self._update_best_metric_result(dataset_name, self.key_metric,
                                                             self.metric_results[self.key_metric], current_iter)
 
-                if to_update:
+                if to_update and self.is_train:
                     for name, opt_ in self.opt['val']['metrics'].items():
                         self._update_metric_result(dataset_name, name, self.metric_results[name], current_iter)
                     self.copy_model(self.net, self.net_best)
@@ -181,7 +181,7 @@ class GeneralIQAModel(BaseModel):
                                                                   current_iter)
                     updated.append(tmp_updated)
                 # save best model if any metric is updated
-                if sum(updated):
+                if sum(updated) and self.is_train:
                     self.copy_model(self.net, self.net_best)
                     self.save_network(self.net_best, 'net_best')
 

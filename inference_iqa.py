@@ -1,6 +1,7 @@
 import argparse
 import glob
 import os
+import re
 from PIL import Image
 from pyiqa.models.inference_model import InferenceModel
 
@@ -37,14 +38,19 @@ def main():
                                args.mean, args.std)
     metric_mode = iqa_model.metric_mode
 
+    def sorted_alphanumeric(data):
+        convert = lambda text: int(text) if text.isdigit() else text.lower()
+        alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+        return sorted(data, key=alphanum_key)
+
     if os.path.isfile(args.input):
         input_paths = [args.input]
         if args.ref is not None:
             ref_paths = [args.ref]
     else:
-        input_paths = sorted(glob.glob(os.path.join(args.input, '*')))
+        input_paths = sorted_alphanumeric(glob.glob(os.path.join(args.input, '*.png')))
         if args.ref is not None:
-            ref_paths = sorted(glob.glob(os.path.join(args.ref, '*')))
+            ref_paths = sorted_alphanumeric(glob.glob(os.path.join(args.ref, '*.png')))
 
     if args.save_file:
         sf = open(args.save_file, 'w')
@@ -61,9 +67,10 @@ def main():
             ref_img = None
         score = iqa_model.test(tar_img, ref_img)
         avg_score += score
-        print(f'{metric_name} score of {img_name} is: {score}')
+        # print(f'{metric_name} score of {img_name} is: {score}')
         if args.save_file:
-            sf.write(f'{img_name}\t{score}\n')
+            # sf.write(f'{img_name}\t{score}\n')
+            sf.write(f'{score}\n')
     avg_score /= test_img_num
     if test_img_num > 1:
         print(f'Average {metric_name} score of {args.input} with {test_img_num} images is: {avg_score}')

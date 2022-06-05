@@ -1,6 +1,6 @@
 # general settings
-name: debug001_NIMA_VGG16
-name: 010_NIMA_VGG16
+# name: debug001_NIMA_VGG16
+name: NeRF_NIMA_VGG16
 model_type: NIMAModel
 num_gpu: 1  # set num_gpu: 0 for cpu mode
 manual_seed: 123
@@ -10,9 +10,9 @@ datasets:
   train:
     name: ava
     type: AVADataset
-    dataroot_target: ./datasets/AVA_dataset/ava_images/
-    meta_info_file: ./datasets/meta_info/meta_info_AVADataset.csv
-    split_file: ./datasets/train_split_info/ava_official_ilgnet.pkl
+    dataroot_target: ./datasets/NeRF_datasets/NeRF_images/
+    meta_info_file: ./datasets/meta_info/NeRF_dataset.csv
+    split_file: ./datasets/train_split_info/NeRF_split.pkl
     split_index: 1 # use official split
 
     augment:
@@ -32,9 +32,9 @@ datasets:
   val:
     name: ava
     type: AVADataset
-    dataroot_target: ./datasets/AVA_dataset/ava_images/
-    meta_info_file: ./datasets/meta_info/meta_info_AVADataset.csv
-    split_file: ./datasets/train_split_info/ava_official_ilgnet.pkl
+    dataroot_target: ./datasets/NeRF_datasets/NeRF_images/
+    meta_info_file: ./datasets/meta_info/NeRF_dataset.csv
+    split_file: ./datasets/train_split_info/NeRF_split.pkl
     split_index: 1 # use official split
 
     augment:
@@ -52,7 +52,8 @@ network:
 
 # path
 path:
-  pretrain_network_g: ~
+  pretrain_network: ./pretrained/NIMA_VGG16_ava-dc4e8265.pth
+  # pretrain_network_g: ~
   strict_load_g: true
   resume_state: ~
 

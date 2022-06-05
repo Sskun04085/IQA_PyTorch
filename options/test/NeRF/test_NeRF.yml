@@ -1,0 +1,68 @@
+# general settings
+# name: debug001_NIMA_VGG16
+name: Mix_NIMA_VGG16_test_ship_rabbit
+model_type: NIMAModel
+num_gpu: 1  # set num_gpu: 0 for cpu mode
+manual_seed: 123
+
+# dataset and data loader settings
+datasets:
+  test:
+    name: ava
+    type: AVADataset
+    dataroot_target: ./datasets/NeRF_datasets/NeRF_test_ship_rabbit/
+    meta_info_file: ./datasets/meta_info/ship_rabbit_mix.csv
+    split_file: ./datasets/train_split_info/ship_rabbit_mix_split.pkl
+    split_index: 1 # use official split
+
+    augment:
+      resize: [224, 224]
+
+    num_worker_per_gpu: 8
+    batch_size_per_gpu: 64
+    prefetch_mode: cpu
+    num_prefetch_queue: 8
+
+# network structures
+network:
+  type: NIMA
+  base_model_name: vgg16
+
+# path
+path:
+  pretrain_network: ./pretrained/NeRF_full_best.pth
+  # pretrain_network_g: ~
+  strict_load_g: true
+  resume_state: ~
+
+# validation settings
+val:
+  val_freq: !!float 3e3
+  save_img: false
+  pbar: true
+
+  key_metric: srcc # if this metric improve, update all metrics. If not specified, each best metric results will be updated separately
+  metrics:
+    srcc:
+      type: calculate_srcc
+
+    plcc:
+      type: calculate_plcc
+
+    krcc:
+      type: calculate_krcc
+
+# logging settings
+logger:
+  print_freq: 100
+  save_checkpoint_freq: !!float 5e9
+  save_latest_freq: !!float 1e3
+  use_tb_logger: true
+  wandb:
+    project: ~
+    resume_id: ~
+
+# dist training settings
+dist_params:
+  backend: nccl
+  port: 29500
