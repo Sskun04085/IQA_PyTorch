@@ -4,6 +4,9 @@ import torchvision as tv
 from pyiqa.archs import create_metric
 from pyiqa.default_model_configs import DEFAULT_CONFIGS
 
+import os
+## yue 0705 
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 class InferenceModel():
     """Common model for quality inference of single image with default setting of each metric."""

@@ -1,58 +1,49 @@
 # general settings
-# name: debug001_NIMA_VGG16
-name: NeRF_50000it_NIMA_VGG16
-model_type: NIMAModel
+# name: debug_DBCNN_LIVEC
+name: DBCNN_NeRF
+model_type: DBCNNModel
 num_gpu: 1  # set num_gpu: 0 for cpu mode
 manual_seed: 123
 
 # dataset and data loader settings
 datasets:
   train:
-    name: ava
-    type: AVADataset
+    name: NeRF
+    type: GeneralNRDataset
     dataroot_target: ./datasets/NeRF_datasets/NeRF_images/
     meta_info_file: ./datasets/meta_info/NeRF_dataset.csv
     split_file: ./datasets/train_split_info/NeRF_split.pkl
     split_index: 1 # use official split
 
     augment:
-      resize: [256, 256]
-      random_crop: 224
+      resize: [512, 512]
+      random_crop: 480
       hflip: true
     img_range: 1
 
     # data loader
     use_shuffle: true
-    num_worker_per_gpu: 12
-    batch_size_per_gpu: 64
+    num_worker_per_gpu: 4
+    batch_size_per_gpu: 8
     dataset_enlarge_ratio: 1
-    prefetch_mode: cpu
-    num_prefetch_queue: 8
+    prefetch_mode: ~
 
   val:
-    name: ava
-    type: AVADataset
+    name: NeRF
+    type: GeneralNRDataset
     dataroot_target: ./datasets/NeRF_datasets/NeRF_images/
     meta_info_file: ./datasets/meta_info/NeRF_dataset.csv
     split_file: ./datasets/train_split_info/NeRF_split.pkl
     split_index: 1 # use official split
 
-    augment:
-      resize: [224, 224]
-
-    num_worker_per_gpu: 8
-    batch_size_per_gpu: 64
-    prefetch_mode: cpu
-    num_prefetch_queue: 8
-
 # network structures
 network:
-  type: NIMA
-  base_model_name: vgg16
+  type: DBCNN
+  pretrained_scnn_path: './pretrained/DBCNN/scnn.pkl'
 
 # path
 path:
-  pretrain_network: ./pretrained/NIMA_VGG16_ava-dc4e8265.pth
+  pretrain_network: './pretrained/DBCNN/DBCNN_KonIQ10k-254e8241.pth'
   # pretrain_network_g: ~
   strict_load_g: true
   resume_state: ~
@@ -60,27 +51,42 @@ path:
 # training settings
 train:
   optim:
+    type: SGD
+    lr: !!float 1e-3
+    momentum: 0.9
+    weight_decay: !!float 5e-4
+
+  optim_finetune:
     type: Adam
-    lr_basemodel: !!float 5e-5
-    lr_classifier: !!float 5e-4
-    lr: !!float 1e-4
+    lr: !!float 1e-5
+    weight_decay: !!float 5e-4
 
   scheduler:
     type: MultiStepLR
-    milestones: [40000]
-    gamma: 0.1
+    milestones: [1000]
+    gamma: 1
 
-  total_iter: 50000
+  scheduler_finetune:
+    type: MultiStepLR
+    milestones: [1000]
+    gamma: 1
+
+  total_iter: 20000 # 883 iter/epoch, train/finetune for about 30 epochs
+  finetune_start_iter: 10000
   warmup_iter: -1  # no warm up
 
   # losses
   mos_loss_opt:
-    type: EMDLoss
+    type: MSELoss
+    loss_weight: !!float 1.0
+
+  metric_loss_opt:
+    type: PLCCLoss
     loss_weight: !!float 1.0
 
 # validation settings
 val:
-  val_freq: !!float 3e3
+  val_freq: !!float 800
   save_img: false
   pbar: true
 
@@ -98,8 +104,7 @@ val:
 # logging settings
 logger:
   print_freq: 100
-  save_checkpoint_freq: !!float 5e9
-  save_latest_freq: !!float 1e3
+  save_latest_freq: !!float 5e2
   use_tb_logger: true
   wandb:
     project: ~
